@@ -1,0 +1,76 @@
+name: Code Quality
+
+on:
+  pull_request:
+    branches: [main, dev]
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+jobs:
+  # ─────────────────────────────────────────────────
+  # Job 1: Static Analysis (Checkstyle + PMD + SpotBugs)
+  # ─────────────────────────────────────────────────
+  static-analysis:
+    name: Static Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Compile (skip tests)
+        run: mvn clean compile -B -DskipTests
+
+      - name: Checkstyle
+        run: mvn checkstyle:check -Pcode-inspection -B
+        continue-on-error: true
+
+      - name: PMD
+        run: mvn pmd:pmd -Pcode-inspection -B
+        continue-on-error: true
+
+      - name: SpotBugs + FindSecBugs
+        run: mvn spotbugs:spotbugs -Pcode-inspection -B
+        continue-on-error: true
+
+      - name: Upload analysis reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: static-analysis-reports
+          path: |
+            **/target/checkstyle-result.xml
+            **/target/pmd.xml
+            **/target/spotbugsXml.xml
+          retention-days: 14
+
+  # ─────────────────────────────────────────────────
+  # Job 2: Code Formatting (Spotless)
+  # ─────────────────────────────────────────────────
+  formatting:
+    name: Code Formatting
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Check formatting (Spotless)
+        run: mvn spotless:check -Dspotless.skip=false -B
