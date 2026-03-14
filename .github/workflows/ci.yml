@@ -140,5 +140,8 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      - name: Install dependencies (skip tests)
+        run: mvn clean install -DskipTests -B
+
       - name: Run ArchUnit tests
-        run: mvn clean test -pl bootstrap -Dtest="**/archunit/**" -B
+        run: mvn test -pl bootstrap -Dtest="**/archunit/**" -B
