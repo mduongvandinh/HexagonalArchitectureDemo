@@ -42,6 +42,10 @@ public class Cart {
     return lineItems.values().stream().map(CartLineItem::subTotal).reduce(Price::add).orElse(null);
   }
 
+  public boolean isEmpty() {
+    return lineItems.isEmpty();
+  }
+
   /**
    * Should be used to Recreate cart without verifying the stock.
    * That can be done while updating the Cart or during Checkout verification
