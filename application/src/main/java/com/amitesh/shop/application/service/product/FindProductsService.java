@@ -20,8 +20,8 @@ public class FindProductsService implements FindProductsUseCase {
 
   @Override
   public List<Product> findByNameOrDescription(String query) {
-    if (null == query || query.length() < 2) {
-      throw new IllegalArgumentException("'query' must be at least two characters long");
+    if (null == query || query.length() < 3) {
+      throw new IllegalArgumentException("'query' must be at least three characters long");
     }
     return productRepository.findByNameOrDescription(query);
   }
